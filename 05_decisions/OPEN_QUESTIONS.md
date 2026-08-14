@@ -46,12 +46,16 @@ Bối cảnh: User nhắc tới một tên project/test gần giống "test hapk
 
 ## Đề xuất từ RQ00 (`03_research/current_evaluation_audit.md`) — chờ review, chưa áp dụng vào `RQ_INDEX.md`
 
-## Q-005 — UNVERIFIED ENTITY: "PresentBench" (ưu tiên cao) — vẫn OPEN
+## Q-005 — "PresentBench" — **ĐÃ VERIFY, entity có thật** (còn phần hệ quả chờ review)
 
-Nêu ra: 2026-08-14
-Bối cảnh: Architecture doc §8 viết: *"MLLM-as-judge (theo hướng PresentBench - checklist chi tiết riêng cho từng input, judge chấm từng mục kèm bằng chứng)"*. Đây là tên riêng cụ thể, có thể là một paper/benchmark thật, nhưng chưa được verify tồn tại hay đề xuất gì.
-Đề xuất (đã điều chỉnh sau review): **Không** gắn việc verify chỉ vào RQ06. Verify "PresentBench" là việc đầu tiên khi **Wave 1** bắt đầu (RQ01/RQ06/RQ08) — nếu nó thật, có thể liên quan cả RQ01 (dimensions nó dùng), RQ06 (judge protocol), RQ07 (benchmark), RQ02/RQ04 (cách chấm fidelity/design). Route evidence sang đúng RQ sau khi xác định nó là gì.
-Đang chờ: Wave 1 bắt đầu. Vẫn OPEN — chưa verify.
+Nêu ra: 2026-08-14 · Verify xong: 2026-08-14 (Wave 1)
+Bối cảnh: Architecture doc §8 viết: *"MLLM-as-judge (theo hướng PresentBench - checklist chi tiết riêng cho từng input, judge chấm từng mục kèm bằng chứng)"*. Trước Wave 1 đây là UNVERIFIED ENTITY.
+
+**Kết quả verify (EXTERNAL EVIDENCE, E1):** *PresentBench: A Fine-Grained Rubric-Based Benchmark for Slide Generation*, arXiv 2603.07244 (v1, 2026-03-07); repo chính chủ `github.com/PresentBench/PresentBench` (Apache-2.0); dataset trên HuggingFace. **Ba session Wave 1 (RQ01, RQ06, RQ08) verify độc lập đều ra cùng arXiv ID.** RQ06 đã phân biệt rõ với các entity khác tên gần giống (UniPPTBench, SlidesBench, PPTEval, SlidesGen-Bench).
+
+**Phần chưa đóng — cần review:** RQ06 báo §8 mô tả **đúng cơ chế** (checklist per-input, item nhị phân, judge chấm kèm bằng chứng) nhưng bỏ sót 3 điều quan trọng: (a) quy mô authoring rất lớn (54.1 item/instance × 238 instance, expert soạn tay), (b) trần tin cậy thực tế ρ=0.532 so với trần người–người 0.664, (c) nó là benchmark end-to-end chứ không phải một judge protocol đóng gói sẵn để mượn về dùng.
+
+Chi tiết + đề xuất route sang RQ01/RQ02/RQ04/RQ07/RQ08 nằm ở `03_research/RQ06/evidence.md` và `recommendation.md`. **Chưa quyết định gì** về việc có dùng PresentBench hay không — chờ human review + Wave 1 synthesis.
 
 ## Q-006 — [RESOLVED → D-003] Ngưỡng "đo được vs định tính" chấp nhận cho đồ án
 

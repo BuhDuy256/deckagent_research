@@ -2,15 +2,37 @@
 
 Bảng trạng thái tổng hợp — mở file này để biết ngay "đang ở đâu", không cần lục qua từng RQ.
 
-## Wave 1 — nền tảng (READY, chạy song song)
+## Wave 1 — nền tảng (**RESEARCH DONE — chờ human review**, 2026-08-14)
 
-| RQ | Chủ đề | Trạng thái | Ghi chú |
+Cả 3 session đã hoàn tất, mỗi RQ đủ 3 file. (Ghi chú lịch sử: 3 session bị ngắt giữa chừng do hit API session limit, sau đó được resume từ transcript cũ với context research còn nguyên — không phải research lại từ đầu.)
+
+| RQ | Chủ đề | Trạng thái | Output |
 | --- | --- | --- | --- |
-| [RQ01](02_research_questions/RQ01_evaluation_dimensions.md) | Evaluation dimensions (WHAT) | **READY** | Không nhồi câu hỏi rigor (Q-006) vào đây — đã route sang design policy |
-| [RQ06](02_research_questions/RQ06_llm_judge.md) | Judge/evaluator landscape (HOW) | **READY** | Có 3 sub-question mới: bias mitigation, checklist-per-instance vs rubric, NFR-52/53 landscape comparison |
-| [RQ08](02_research_questions/RQ08_baselines.md) | Baseline landscape (AGAINST WHAT) | **READY** | — |
+| [RQ01](02_research_questions/RQ01_evaluation_dimensions.md) | Evaluation dimensions (WHAT) | **ANSWERED — chờ review** | `03_research/RQ01/` — landscape 340 / evidence 312 / recommendation 369 dòng |
+| [RQ06](02_research_questions/RQ06_llm_judge.md) | Judge/evaluator landscape (HOW) | **ANSWERED — chờ review** | `03_research/RQ06/` — landscape 363 / evidence 548 / recommendation 309 dòng |
+| [RQ08](02_research_questions/RQ08_baselines.md) | Baseline landscape (AGAINST WHAT) | **ANSWERED — chờ review** | `03_research/RQ08/` — landscape 330 / evidence 205 / recommendation 219 dòng |
 
-**Việc đầu tiên của Wave 1:** verify UNVERIFIED ENTITY "PresentBench" (`05_decisions/OPEN_QUESTIONS.md` Q-005), route evidence sang RQ liên quan.
+`03_research/external_systems/opendesign.md` đã được RQ08 cập nhật từ stub (Open Design = `nexu-io/open-design`, VERIFIED E1; nhưng **liên kết với NFR mục 0.1 vẫn là INFERENCE chưa confirm**).
+
+### Chưa làm — cố ý
+
+- **Chưa consolidate ~26 proposed decision** từ mục 4 của 3 file `recommendation.md` vào `OPEN_QUESTIONS.md`. Chờ human review trước.
+- **Chưa tạo `03_research/WAVE1_SYNTHESIS.md`.** Theo quy trình: user đọc 3 file `recommendation.md` trước → rồi mới cho một session riêng làm synthesis.
+- **Wave 2 vẫn BLOCKED.** Không mở trước checkpoint review.
+
+### Cross-check giữa 3 session (giá trị của việc chạy độc lập)
+
+- **PresentBench: cả 3 session độc lập đều verify ra cùng arXiv 2603.07244.** RQ06 (session chịu trách nhiệm chính) cung cấp đầy đủ tác giả + repo Apache-2.0 + HF dataset. Q-005 coi như đã trả lời được phần "entity có thật".
+- **Hai session hội tụ về cùng một mối lo:** RQ01 báo PPTEval Coherence human-correlation 0.55 (trong khi Design 0.90); RQ06 báo PresentBench ρ=0.532 so với trần người–người 0.664. Cả hai đều chỉ về cùng một hướng: **judge yếu nhất đúng ở dimension Deck Agent claim giá trị nhất**. Đây là điểm quan trọng nhất cần xử lý ở synthesis.
+- **Một tension cần giải ở synthesis:** RQ06 cảnh báo ngưỡng agreement "đủ tin" (Krippendorff) chỉ ở mức E2 và **mâu thuẫn với thực tế domain** — PPTEval đo κ≈0.59 *giữa người với người*, dưới cả ngưỡng tentative. Tức chuẩn agreement chuẩn mực có thể không áp dụng được cho domain này.
+
+**Quy ước Wave 1:**
+- 3 session chạy độc lập để không anchor lẫn nhau. **Không session nào được tự synthesize cả Wave 1.**
+- Không session nào được sửa file dùng chung (`OPEN_QUESTIONS.md`, `EVIDENCE_INDEX.md`, `RESEARCH_STATUS.md`, `RQ_INDEX.md`, `06_design/`, `DECISION_LOG.md`) — tránh ghi đè khi chạy song song. Open question mới nằm ở mục 4 của từng `recommendation.md`, consolidate sau.
+- Mỗi RQ đánh dấu nguồn theo **MUST READ** (tối đa 3–5 primary source) / **SHOULD READ** / **DISCOVERY ONLY** — để đọc có trọng tâm, không chìm trong literature.
+- Việc đầu tiên của RQ06: verify UNVERIFIED ENTITY "PresentBench" (Q-005), route evidence sang RQ liên quan nếu nó thật.
+
+**Checkpoint tiếp theo sau khi cả 3 xong:** đọc theo thứ tự `RQ01/recommendation.md` → `RQ06/recommendation.md` → `RQ08/recommendation.md`, rồi mới tạo `03_research/WAVE1_SYNTHESIS.md` bằng một session riêng. **Không mở Wave 2 trước checkpoint này.**
 
 ## Wave 2 — chi tiết hóa dimension (Blocked by Wave 1)
 
