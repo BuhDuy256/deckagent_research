@@ -122,3 +122,61 @@ Ngày: 2026-08-14 (Wave 1 Decision Gate, G-14)
 Decision: Yêu cầu team implementation lưu run manifest đầy đủ **từ bây giờ** (danh sách field ở `06_design/EVALUATION_PIPELINE.md` §Run Manifest). Đặc biệt: **plan/outline artifact phải persist**.
 Vì sao: Chưa biết final metric nhưng đã chắc chắn evaluation cần reproducibility. Run comparison vô nghĩa nếu model/prompt/benchmark thay đổi ngầm (Atil 2024: dao động ~15% giữa các run được cho là "deterministic"). Plan artifact cần persist không phải vì plan là metric cuối, mà vì khi output hỏng cần reconstruct được "planner đã quyết định gì". Đây là engineering requirement độc lập với kết quả research nên không cần chờ.
 Ảnh hưởng: `06_design/EVALUATION_PIPELINE.md`; yêu cầu gửi team implementation
+
+---
+
+## Wave 2A Human Review (2026-08-15) — D-015 → D-020
+
+Nguồn: human review trực tiếp của Wave 2A handoff. Các decision dưới đây được promote từ candidate/working policy theo đúng phạm vi ghi trong từng mục; chúng **không** biến MiniCheck, threshold pilot hay ba định nghĩa `slide_type` cụ thể thành accepted truth.
+
+## D-015 — Coverage đo topic/fact presence; correctness đo riêng
+
+Ngày: 2026-08-15 (Wave 2A Human Review)
+Decision: Coverage đo một topic/fact **có xuất hiện hay không**. Fact đã xuất hiện nhưng nói sai **không** bị gán là missing; lỗi đó được báo riêng trong correctness/incorrectness. Không aggregate coverage và correctness thành một score.
+Vì sao: Giữ đúng phân vai của D-008: bỏ sót và nói sai là hai failure khác nhau, cần action khác nhau. Nếu “present nhưng sai” vừa giảm coverage vừa tăng incorrectness, cùng một lỗi bị đếm trên hai trục và coverage không còn độc lập.
+Phương án khác đã xét: Coverage = correct presence. Không chọn cho pilot vì nó tái gộp coverage với correctness.
+Ảnh hưởng: `03_research/WAVE2A_DECISION_GATE.md` W2A-05; `07_experiments/pilot/PILOT_PLAN_WAVE2A.md` SQ-P1; schema/metric future chỉ sau khi RQ07 được mở.
+
+## D-016 — Option C là working policy cho coverage × `slide_type` trong pilot
+
+Ngày: 2026-08-15 (Wave 2A Human Review)
+Decision: Pilot dùng policy categorical hai layer: `universal_core` + `mode_required` + `optional/not_expected`. Báo riêng `universal_core_coverage`, `mode_required_coverage` và diagnostic presence của `optional/not_expected`; **không aggregate** thành một score. Đây là working product/evaluation policy cho pilot, **không claim là external best practice** và chưa freeze thành final benchmark policy.
+Vì sao: Cần đồng thời giữ một source-quality floor chung và cho phép information selection phụ thuộc purpose của mode, nhưng tránh continuous weight dễ tune theo output. Categorical policy vẫn cần author/review/freeze trước run.
+Phương án khác đã xét: Option A (cùng fact/cùng weight) và Option B (continuous weight theo mode); giữ trong `SOURCE_COVERAGE_VS_SLIDE_TYPE.md` làm alternatives, không chọn cho pilot hiện tại.
+Ảnh hưởng: `03_research/cross_rq/SOURCE_COVERAGE_VS_SLIDE_TYPE.md`; `06_design/drafts/SLIDE_TYPE_BEHAVIOR_SPEC.md`; Pilot B0. Không mở RQ07.
+
+## D-017 — Core của `slide_type` là purpose + information selection; surface feature là diagnostic
+
+Ngày: 2026-08-15 (Wave 2A Human Review)
+Decision: Trong pilot version hiện tại, semantic/core distinction của `slide_type` ưu tiên **purpose** và **information selection**. `text density`, `image ratio`, `layout`, `compression` và các surface observable khác là **SECONDARY/DIAGNOSTIC**, trừ khi team sau này explicit promote một feature thành CORE. `speaker_notes` giữ FR-55=P3 và **không** là core feature của `speaker_support` trong pilot hiện tại.
+Vì sao: RQ03 không tìm thấy external truth cho ba mode; X+Slides chỉ là precedent gần và chỉ ra information selection, không định nghĩa profile Deck Agent. Surface feature dễ game và chỉ chứng minh output khác, không chứng minh purpose đúng. Dùng `speaker_notes` làm core khi FR-55=P3 sẽ âm thầm đổi product priority.
+Phương án khác đã xét: coi text/image/density theo FR-20 hoặc `speaker_notes` là core ngay. Không chọn cho pilot version hiện tại.
+Ảnh hưởng: `06_design/drafts/SLIDE_TYPE_BEHAVIOR_SPEC.md`; Pilot B0/B1. Định nghĩa cụ thể teaching/catchup/speaker_support vẫn là human blocker.
+
+## D-018 — Resolve Q-014 bằng cách merge experiment trùng; ablation riêng phải là intervention khác
+
+Ngày: 2026-08-15 (Wave 2A Human Review)
+Decision: Nếu ablation A1 `without ContentPlanner` có implementation `Extractor output → ONE prompt → Deck IR`, nó **được merge vào B-1** dưới tên **Single-shot planning baseline**; không chạy/báo cáo như hai evidence độc lập. Nếu cần ablation riêng, phải định nghĩa intervention khác rõ ràng — candidate: giữ full ContentPlanner nhưng bỏ explicit plan/outline artifact — và ghi câu hỏi causal riêng trước implementation.
+Vì sao: Hai experiment có cùng intervention không tạo hai evidence. Merge giữ claim đúng của B-1; ablation riêng chỉ có ý nghĩa khi thay một cơ chế khác và giữ phần còn lại cố định.
+Câu hỏi của từng experiment:
+- **B-1 / A1 merged — Single-shot planning baseline:** “Việc tách một planning stage rõ ràng có cải thiện end-to-end output so với một LLM call trực tiếp từ Extractor output sang Deck IR không?”
+- **Candidate ablation riêng — `without explicit plan/outline artifact`:** “Trong một full ContentPlanner, explicit plan/outline artifact có đóng góp vượt phần planner còn lại không?” Đây chưa phải experiment đã bắt buộc implement; chỉ là definition hợp lệ nếu team cần ablation riêng.
+Ảnh hưởng: Q-014 resolved; `06_design/BASELINE_SPEC.md`; mọi experiment registry/config sau này.
+
+## D-019 — Source-quality pilot dùng SQ-P1…SQ-P4 và tách trách nhiệm detection/classification
+
+Ngày: 2026-08-15 (Wave 2A Human Review)
+Decision: Rename Pilot A1–A4 thành `SQ-P1`…`SQ-P4` để không trùng ablation A1. `SQ-P1` chỉ smoke-test supported/coverage/unsupported/derived routing: O0 supported; O1 coverage giảm; O2/O3 unsupported; O4 không bị kết tội và vào `derived_number_queue`. `SQ-P1` **không** phải tách hallucination khỏi incorrectness; việc đó chỉ thuộc `SQ-P4`.
+Vì sao: Grounding detector nhị phân được kỳ vọng cho O2/O3 cùng signal `unsupported`. Đòi SQ-P1 phân loại hai lỗi sẽ tạo hard-fail mâu thuẫn với chính architecture hai bước của RQ02 và làm lẫn với ablation A1.
+Ảnh hưởng: `07_experiments/pilot/PILOT_PLAN_WAVE2A.md`; W2A-08 vẫn HOLD tới SQ-P4.
+
+## D-020 — Pilot `slide_type` chạy B0 smoke trước; B1 confirmatory chỉ freeze sau B0
+
+Ngày: 2026-08-15 (Wave 2A Human Review)
+Decision: Tách Pilot B thành:
+- **B0 — Smoke/feasibility:** source set nhỏ; same source × 3 mode × repeats; descriptive WITHIN vs BETWEEN; feature-level direction/error analysis; không dùng confirmatory p-value/CI làm project evidence.
+- **B1 — Confirmatory:** chỉ thiết kế/freeze sau khi B0 cho thấy signal đáng theo; khi đó mới chọn sample size, freeze permutation/bootstrap, threshold và classifier evaluation.
+
+Các threshold `0,80`, `70%`, `80%`, `accuracy ≥0,50`, `p<0,05` trong draft hiện chỉ là **candidate engineering gates**, không phải accepted requirement hay external standard. Với smoke fixture nhỏ, explicit expected-case behavior được ưu tiên hơn diễn giải phần trăm như statistical evidence.
+Vì sao: B0 phải kiểm feasibility và hình dạng signal trước khi giả định effect size/sample size cho confirmatory design. Dùng full confirmatory machinery để chặn smoke test vừa tốn kém vừa tạo vẻ rigor giả trên sample rất nhỏ.
+Ảnh hưởng: `07_experiments/pilot/PILOT_PLAN_WAVE2A.md`; B1 chưa được phép freeze/chạy. Human sample size Q-013 vẫn HOLD/TBD.

@@ -1,6 +1,6 @@
 # Baseline Spec
 
-Trạng thái: **chưa viết**. Trả lời RQ08. Định nghĩa baseline nào được xây và so sánh công bằng thế nào.
+Trạng thái: **WORKING DRAFT — RQ08 research complete; implementation/final benchmark mapping pending.** File này định nghĩa baseline nào được xây và so sánh công bằng thế nào.
 
 ## Loại baseline cần specify
 
@@ -8,12 +8,12 @@ Trạng thái: **chưa viết**. Trả lời RQ08. Định nghĩa baseline nào 
 | --- | --- | --- |
 | A. Historical | v0.5 vs v0.6 | Có đang cải thiện không? |
 | B. Naive / simplified — **"Single-shot planning baseline"** | `source → one LLM call → Deck IR → same exporter` | **Tách riêng planning stage có đáng không?** |
-| C. Ablation | Deck Agent không có ContentPlanner | Component này đóng góp gì? |
+| C. Ablation | Candidate: full ContentPlanner nhưng bỏ explicit plan/outline artifact | Artifact rõ ràng này đóng góp gì vượt phần planner còn lại? |
 | D. External system | Deck Agent vs. Open Design / PPTAgent / Gamma | Ta ở đâu trên bản đồ? (contextual — xem D-013) |
 
 Bốn family này là **bốn câu hỏi khác nhau, không thay thế nhau** (D-012).
 
-### ⚠️ B-1 KHÔNG chứng minh giá trị của Deck IR (D-011 gate G-11, `REJECTED_APPROACHES.md` R-002)
+### ⚠️ B-1 KHÔNG chứng minh giá trị của Deck IR (Wave 1 Gate G-11 / `REJECTED_APPROACHES.md` R-002; làm rõ tiếp bởi D-018)
 
 B-1 **vẫn dùng Deck IR ở cả hai nhánh** — nó so `source → ContentPlanner → Deck IR` với `source → one LLM call → Deck IR`. Vì vậy:
 
@@ -22,11 +22,25 @@ B-1 **vẫn dùng Deck IR ở cả hai nhánh** — nó so `source → ContentPl
 
 Muốn claim về Deck IR cần một experiment khác (IR-first pipeline vs. direct generation pipeline), khó làm fair hơn đáng kể — chưa thiết kế.
 
-### 🚧 CHẶN IMPLEMENTATION: A1 và B-1 đang trùng nhau (Q-014)
+### ✅ Q-014 đã resolve: merge intervention trùng, ablation riêng phải hỏi câu khác (D-018)
 
-Nếu A1 (`without ContentPlanner`) cũng là `Extractor output → ONE prompt → Deck IR` thì nó **chính là** B-1. Nguy cơ: chạy hai experiment giống hệt nhau rồi báo cáo như hai evidence độc lập.
+Nếu A1 (`without ContentPlanner`) cũng là `Extractor output → ONE prompt → Deck IR`, A1 **được merge vào B-1** dưới tên **Single-shot planning baseline**. Chỉ implement/run/report một experiment; không gọi hai tên rồi dùng như hai evidence độc lập.
 
-Phải chọn **trước khi implement**: merge chúng, HOẶC định nghĩa A1 khác (vd. A1 = full pipeline nhưng bypass explicit plan/outline artifact; B-1 = one-shot hoàn toàn). Xem `05_decisions/OPEN_QUESTIONS.md` Q-014.
+**Câu hỏi B-1 / A1 merged trả lời:**
+
+> Việc tách một planning stage rõ ràng có cải thiện end-to-end output so với một LLM call trực tiếp từ Extractor output sang Deck IR không?
+
+Nếu team cần một ablation riêng, intervention phải khác rõ ràng. Candidate hợp lệ:
+
+```text
+full ContentPlanner, nhưng bỏ explicit plan/outline artifact
+```
+
+**Câu hỏi candidate ablation riêng trả lời:**
+
+> Trong một full ContentPlanner, explicit plan/outline artifact có đóng góp vượt phần planner còn lại không?
+
+Candidate này **chưa phải experiment bắt buộc implement**. Trước implementation phải specify chính xác phần nào bị bỏ, phần nào giữ nguyên và bảo đảm nó không collapse trở lại B-1. Xem D-018 và Q-014 resolved.
 
 ## Cần specify cho từng baseline
 
