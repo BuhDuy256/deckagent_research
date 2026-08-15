@@ -81,6 +81,35 @@ Nêu ra: 2026-08-14 · Resolved: 2026-08-14
 Bối cảnh: §8 chỉ đề cập AI-quality, bỏ sót latency (NFR-01-03), reliability (NFR-20-22), cost (NFR-90-92) dù mission cần dữ liệu này.
 Quyết định: Accept — `06_design/EVALUATION_FRAMEWORK.md` đã được restructure thành 3 layer (Quality / Correctness-Functional / Operational Evaluation). Xem `05_decisions/DECISION_LOG.md` D-005.
 
+## Q-011 — [HOLD từ Wave 1 Gate G-03] Reference-frame taxonomy 5 lớp có đứng vững không?
+
+Nêu ra: 2026-08-14 (Wave 1 Decision Gate)
+Bối cảnh: RQ01 đề xuất tổ chức evaluation theo **reference frame** (deck đang được so với cái gì) thành L0 Artifact Integrity → L1 Source Grounding → L2 Information Selection → L3 Brief Compliance → L4 Presentation Quality → L5 Outcome/Usability, thay cho 4 dimension phẳng của §8.
+Vì sao HOLD: Cách nghĩ có nền tảng tốt (reference frame thường dự đoán được method). Nhưng **lý do biện minh không đủ** — nó dựa vào so sánh human-correlation giữa các paper khác nhau về dataset/judge/task/protocol; cross-paper comparison chỉ đủ để gợi ý, không đủ để chứng minh taxonomy tốt nhất. RQ01 cũng tự nhận cách nhóm 5 lớp là INFERENCE của chính nó, không nguồn nào phát biểu.
+Đang chờ: Wave 2 stress-test. Dùng như working taxonomy, đồng thời tích cực tìm chỗ nó gãy. **Không** viết vào `06_design/` như taxonomy chính thức trước khi Wave 2 xong.
+
+## Q-012 — [HOLD từ Wave 1 Gate G-05] F2 (NLI/AlignScore/FActScore) có usable cho Deck Agent không?
+
+Nêu ra: 2026-08-14 (Wave 1 Decision Gate)
+Bối cảnh: RQ06 đề xuất family F2 (NLI/alignment/atomic-fact) là family duy nhất chạm được fidelity ở tần suất daily, và chỉ ra nó vắng mặt hoàn toàn trong §8/NFR.
+Vì sao HOLD: Các method này validate chủ yếu trên summarization/factuality/biography, **chưa có nguồn nào áp lên slide deck** (RQ06 tự nhận, U-2). Deck Agent sinh bullet đã nén/diễn giải/**tính toán lại** — vd. source *"Revenue increased from 12.4M to 18.7M because enterprise adoption accelerated"* → slide *"Enterprise adoption drove ~51% YoY revenue growth"*. Evaluator textual có thể hiểu đúng hoặc fail.
+Đang chờ: RQ02 phải trả lời "**F2 nào thực sự usable**", không phải "đã tìm thấy AlignScore → implement AlignScore". Cần thí nghiệm nhỏ trước khi cam kết.
+
+## Q-013 — [HOLD từ Wave 1 Gate G-07] Cỡ mẫu human evaluation
+
+Nêu ra: 2026-08-14 (Wave 1 Decision Gate)
+Bối cảnh: RQ06 đưa candidate 3 annotator × 50–100 deck, có nguồn (alt-test, Calderon/Reichart/Dror 2025).
+Vì sao HOLD: Con số hữu ích cho scale intuition, nhưng paper dùng để suy ra nó trả lời một câu hỏi thống kê **khác** với "bao nhiêu deck để validate correlation giữa judge của Deck Agent và human". Sample size thật phụ thuộc: validate metric nào, unit là deck hay slide, pairwise hay absolute, variance thực tế, benchmark size, budget/time.
+Đang chờ: RQ07 + pilot data. Ghi trong design doc là `Human sample size = TBD; candidate scale from literature: tens to ~100`. **Không** ghi `Requirement = 100 decks`.
+
+## Q-014 — [OPEN, CHẶN IMPLEMENTATION — Wave 1 Gate G-12] A1 và B-1 đang trùng nhau
+
+Nêu ra: 2026-08-14 (Wave 1 Decision Gate)
+Bối cảnh: RQ08 định nghĩa B-1 (single-shot planning baseline) là `Extractor output → ONE prompt → Deck IR`, và A1 (ablation `without ContentPlanner`) có nguy cơ là **cùng một experiment**.
+Rủi ro: implement hai experiment giống hệt nhau rồi gọi hai tên khác nhau, rồi báo cáo như hai evidence độc lập.
+Cần quyết định: **merge chúng**, HOẶC định nghĩa A1 khác — vd. A1 = full pipeline nhưng bypass explicit plan/outline artifact; B-1 = one-shot generation hoàn toàn.
+Đang chờ: **Phải resolve TRƯỚC khi chạy experiment**, không phải sau. Đây là mục duy nhất của Gate đang chặn implementation.
+
 ## Q-010 — [RESOLVED → D-006] Development Evaluation Protocol / cadence
 
 Nêu ra: 2026-08-14 (do user thêm khi review RQ00) · Resolved: 2026-08-14

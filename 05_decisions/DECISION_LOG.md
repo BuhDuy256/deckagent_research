@@ -60,3 +60,65 @@ Ngày: 2026-08-14
 Decision: Thêm workstream "Development Evaluation Protocol" — phân tier metric nào chạy mỗi commit / PR / nightly / milestone (Tier 0–3). Không phải RQ literature-heavy; là design task, lên lịch sau khi Wave 1 (RQ01, RQ06) và RQ07 (benchmark) có output.
 Vì sao: Mission đặc thù là chứng minh cải thiện "mỗi ngày" — một metric tốt cho final report chưa chắc usable hằng ngày (vd. human evaluation là evidence tốt cho thesis nhưng quá chậm/đắt cho mỗi commit). Audit hiện chỉ đánh dấu Dev Harness? ✓/trống, chưa biến thành protocol/tiering thật.
 Ảnh hưởng: `06_design/EVALUATION_PIPELINE.md` (nơi protocol này cuối cùng sẽ nằm)
+
+---
+
+## Wave 1 Decision Gate (2026-08-14) — D-007 → D-014
+
+Nguồn: human review Wave 1, ghi ở `03_research/WAVE1_SYNTHESIS.md`. Các mục HOLD nằm ở `OPEN_QUESTIONS.md`, các mục REJECT ở `REJECTED_APPROACHES.md`.
+
+## D-007 — Tách deterministic evaluation khỏi judged evaluation
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-01)
+Decision: Mọi RQ và mọi metric phải tách rõ phần deterministic khỏi phần cần judge/human, không gộp thành một score.
+Vì sao: Evidence hội tụ ở cả 3 RQ Wave 1. Việc code kiểm được (overflow, token conformance, schema validity) thì để code kiểm — rẻ hơn, nhanh hơn, lặp lại được, và theo RQ01 còn **chính xác hơn** judge ở đúng loại việc này (SlideAudit: LLM detect design flaw chỉ F1 0.331–0.655).
+Ảnh hưởng: Mọi RQ Wave 2, `06_design/EVALUATION_FRAMEWORK.md` §2
+
+## D-008 — Tách "Content fidelity" thành 3 failure riêng biệt
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-02)
+Decision: Coi hallucination (bịa) / incorrectness (nói sai) / coverage gap (bỏ sót) là ba failure riêng, không gộp thành một score "Content Fidelity". Đây là working distinction.
+Vì sao: Score gộp không cho biết hỏng ở đâu. Deck nói 5/10 ý đều đúng và deck nói đủ 10 ý nhưng 2 ý sai có thể cùng ra "7/10" nhưng là hai loại lỗi khác nhau. Trong development, "hallucination ↓ nhưng coverage ↓" không cho phép kết luận version mới tốt hơn. External work cũng tách các khái niệm này.
+Ảnh hưởng: RQ02 (câu hỏi trung tâm), `06_design/METRIC_REGISTRY.md`
+
+## D-009 — ContentPlanner chứng minh bằng end-to-end + ablation, không bằng "ContentPlanner Score"
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-04)
+Decision: Evidence về contribution của ContentPlanner đến từ **end-to-end metric + ablation**. Component-level metric vẫn được dùng nhưng **chỉ với vai trò diagnostic/debug trong development**, không phải evidence chứng minh giá trị kiến trúc.
+Vì sao: Literature chủ yếu đánh giá deck cuối rồi dùng ablation để chứng minh component có giá trị. Nếu invent "ContentPlanner Quality = 8.3" thì câu hỏi ngay lập tức là "8.3 có làm deck cuối tốt hơn không?" — không trả lời được. Nhưng bỏ hẳn component metric cũng sai: khi deck xấu, cần truy ngược planner bỏ mất critical topic nào.
+Ảnh hưởng: RQ03, RQ08, `06_design/BASELINE_SPEC.md`
+
+## D-010 — Material-dependent quality cần criteria per-instance (principle)
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-06)
+Decision: Chấp nhận **nguyên tắc**: quality phụ thuộc nội dung nguồn cần criteria/probes phụ thuộc từng instance. **Cách tạo** criteria đó vẫn là câu hỏi mở của RQ02/RQ07.
+Vì sao: PDF A nói `Revenue = 18.7M`, PDF B nói `23.4M` → không thể dùng generic rubric "check whether numbers are correct". Nhưng "per-instance" KHÔNG bắt buộc nghĩa là expert viết tay 54 item/PDF như PresentBench (đó là benchmark-scale effort); còn nhiều cách khác cần so sánh.
+Ảnh hưởng: RQ02, RQ07
+
+## D-011 — Mọi model-based evaluator phải đo noise floor trước khi dùng track regression
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-09)
+Decision: Không dùng bất kỳ model-based evaluator nào để track regression trước khi đo repeatability/noise floor của chính nó.
+Vì sao: Cùng deck, cùng prompt, judge chạy 5 lần có thể ra 81/85/80/84/82. Nếu đổi Planner thấy 82 → 84 mà không biết noise floor, "+2 improvement" có thể chỉ là nhiễu. Không đo thì mọi delta nhỏ hơn noise sẽ bị đọc nhầm thành tiến bộ — phá thẳng nền của mission "chứng minh cải thiện mỗi ngày". temperature=0 không đảm bảo determinism.
+Ảnh hưởng: Mọi RQ đề xuất model-based evaluator; `06_design/EVALUATION_PIPELINE.md`. Còn mở: N=?, delta bao nhiêu là significant, aggregate thế nào → pilot + RQ07.
+
+## D-012 — 4 baseline family là 4 câu hỏi khác nhau, không thay thế nhau
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-10)
+Decision: Giữ 4 family: historical (hôm nay vs hôm qua) · naive (pipeline nhiều bước có đáng?) · ablation (component đóng góp gì?) · external (ta ở đâu trên bản đồ?). Không coi cái này thay được cái kia.
+Vì sao: Bốn câu hỏi thực sự khác nhau về mặt logic; trộn chúng dẫn tới claim vượt quá điều kiện đo.
+Ảnh hưởng: `06_design/BASELINE_SPEC.md`
+
+## D-013 — External comparison ở mức optional / contextual
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-13)
+Decision: External comparison là optional, dùng để định vị ("trong điều kiện benchmark X, ngày Y, hệ thống chúng tôi ở vị trí Z so với một số hệ thống liên quan"), **không** dùng để chứng minh causal contribution của ContentPlanner hay của kiến trúc.
+Vì sao: Open Design input là brief và HTML-first; Deck Agent document-grounded và IR-first — hai bên chưa chắc chơi cùng bài. Thắng Open Design không chứng minh architecture Deck Agent tốt hơn. Bộ baseline defensible cho thesis nằm trọn trong tầm kiểm soát team.
+Ảnh hưởng: `06_design/BASELINE_SPEC.md`, `03_research/external_systems/`
+
+## D-014 — Freeze reproducibility / run manifest ngay, không chờ Wave 2
+
+Ngày: 2026-08-14 (Wave 1 Decision Gate, G-14)
+Decision: Yêu cầu team implementation lưu run manifest đầy đủ **từ bây giờ** (danh sách field ở `06_design/EVALUATION_PIPELINE.md` §Run Manifest). Đặc biệt: **plan/outline artifact phải persist**.
+Vì sao: Chưa biết final metric nhưng đã chắc chắn evaluation cần reproducibility. Run comparison vô nghĩa nếu model/prompt/benchmark thay đổi ngầm (Atil 2024: dao động ~15% giữa các run được cho là "deterministic"). Plan artifact cần persist không phải vì plan là metric cuối, mà vì khi output hỏng cần reconstruct được "planner đã quyết định gì". Đây là engineering requirement độc lập với kết quả research nên không cần chờ.
+Ảnh hưởng: `06_design/EVALUATION_PIPELINE.md`; yêu cầu gửi team implementation

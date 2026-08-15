@@ -1,0 +1,58 @@
+# Wave 1 Decision Gate
+
+**Đây KHÔNG phải bản tóm tắt lại RQ01/RQ06/RQ08.** Đây là checkpoint quyết định: mỗi finding của Wave 1 được xử lý thành `ACCEPT` / `REJECT` / `HOLD`, kèm lý do và ảnh hưởng tới Wave 2.
+
+Nguồn của các disposition dưới đây: **human review Wave 1 ngày 2026-08-14** (user đọc trực tiếp `RQ01/recommendation.md`, `RQ06/recommendation.md`, `RQ08/recommendation.md`). Đây là quyết định của người review, không phải kết luận tự động từ agent.
+
+**Lý do phải có gate này:** nếu không, Wave 2 sẽ vô thức coi mọi recommendation của Wave 1 là truth. Một số reasoning ở Wave 1 đã đi xa hơn evidence — gate này chặn đúng những chỗ đó.
+
+## Bảng quyết định
+
+| # | Finding từ Wave 1 | Quyết định | Vì sao | Ảnh hưởng tới Wave 2 |
+| --- | --- | --- | --- | --- |
+| G-01 | Tách deterministic evaluation khỏi judged evaluation | **ACCEPT** | Evidence hội tụ mạnh và nhất quán ở cả 3 RQ. Việc code kiểm được (overflow, token conformance, schema) thì cho code kiểm: rẻ hơn, nhanh hơn, lặp lại được, và theo RQ01 còn **chính xác hơn** judge ở đúng loại việc này. | Mọi RQ Wave 2 phải tách rõ phần deterministic khỏi phần cần judge/human, không gộp thành một score. |
+| G-02 | Tách "Content fidelity" thành 3 failure riêng: **bịa** (hallucination) / **sai** (incorrectness) / **bỏ sót** (coverage gap) | **ACCEPT — làm working distinction** | Một score gộp không cho biết hỏng ở đâu. Ví dụ: deck A nói 5/10 ý, tất cả đúng, không bịa; deck B nói đủ 10 ý nhưng 2 ý sai — cùng ra "7/10" nhưng là hai loại lỗi hoàn toàn khác. Trong development, "hallucination ↓ nhưng coverage ↓" không thể kết luận là tốt hơn. External work cũng tách các khái niệm này. | **Đây là câu hỏi trung tâm của RQ02.** RQ02 phải chứng minh phép đo phân biệt được 3 failure, không chỉ cho ra một con số fidelity. |
+| G-03 | Reference-frame taxonomy 5 lớp (L0–L5) của RQ01 | **HOLD — stress-test qua Wave 2, chưa freeze** | Cách nghĩ "deck đang được so với cái gì?" có nền tảng reasoning tốt và thường dự đoán được method (vd. "đúng 10 slide không?" → reference là user brief → code đếm được; "bỏ sót ý quan trọng không?" → reference là source PDF → cần semantic). NHƯNG **lý do biện minh thì không đủ**: nó dựa vào so sánh human-correlation giữa các paper khác nhau, mà các paper đó khác nhau về dataset/judge/task/protocol. Cross-paper comparison chỉ đủ để **gợi ý**, không đủ để nói taxonomy này được chứng minh là tốt nhất. RQ01 cũng tự nhận cách nhóm 5 lớp là INFERENCE của chính nó, không nguồn nào phát biểu. | Wave 2 dùng nó như **working taxonomy** để tổ chức công việc, đồng thời tích cực tìm chỗ nó gãy. Không viết vào `06_design/` như taxonomy chính thức trước khi Wave 2 stress-test xong. |
+| G-04 | Không tạo "ContentPlanner Score" chỉ vì ContentPlanner là core component; chứng minh contribution bằng **end-to-end + ablation** | **ACCEPT** — nhưng có phân vai | Literature chủ yếu đánh giá deck cuối rồi dùng ablation để chứng minh component có giá trị. Nếu invent "ContentPlanner Quality = 8.3" thì câu hỏi ngay lập tức là "8.3 có làm deck cuối tốt hơn không?" — không trả lời được. **Tuy nhiên RQ01 đi hơi xa nếu hàm ý không cần component-level metric.** Phân vai đúng là: **component metric → chẩn đoán/debug trong development** (deck xấu → coverage giảm → planner bỏ mất critical topic); **end-to-end + ablation → evidence về contribution**. | RQ03 được phép đề xuất signal ở tầng planner, nhưng phải ghi rõ đó là **diagnostic signal**, không phải evidence chứng minh giá trị kiến trúc. |
+| G-05 | Dùng F2 (NLI / AlignScore / FActScore) làm phép đo fidelity chạy hằng ngày | **HOLD — RQ02 phải validate** | Candidate rất đáng nghiên cứu, nhưng chưa đủ evidence để implement. Các method này được validate chủ yếu trên summarization/factuality/biography — **không phải** trên PDF → multi-slide deck với bullet đã nén/diễn giải/tính toán lại, kèm bảng và hình. Ví dụ: source *"Revenue increased from 12.4M to 18.7M because enterprise adoption accelerated"* → slide *"Enterprise adoption drove ~51% YoY revenue growth"*. Evaluator textual có thể hiểu đúng, hoặc fail vì câu đã bị transform + tính toán. RQ06 cũng tự nhận **chưa có bất kỳ nguồn nào áp F2 lên slide deck** (U-2). | RQ02 phải trả lời "**F2 nào thực sự usable cho Deck Agent**", không phải "đã tìm thấy AlignScore → implement AlignScore". Cần thí nghiệm nhỏ trước khi cam kết. |
+| G-06 | Quality phụ thuộc material (source-dependent) cần criteria per-instance | **ACCEPT principle — nhưng method TBD** | Nguyên tắc đúng: PDF A nói `Revenue = 18.7M`, PDF B nói `23.4M` → không thể dùng một generic rubric "check whether numbers are correct"; evaluator phải biết fact của từng source. **Nhưng "per-instance" KHÔNG bắt buộc nghĩa là người viết tay 54 checklist item cho mỗi PDF.** PresentBench dùng expert-authored checklist ở quy mô benchmark (54.1 item × 238 instance) — đó là benchmark-scale effort, chưa chắc phù hợp phạm vi đồ án. Còn nhiều cách khác: automatic critical-fact extraction, question generation, atomic facts, LLM-generated checklist, NLI probes. | Phát biểu mềm: *material-dependent quality cần criteria/probes phụ thuộc từng instance; **cách tạo criteria đó vẫn là câu hỏi mở của RQ02/RQ07***. RQ02 phải so sánh các cách tạo criteria, không mặc định expert-authored. |
+| G-07 | Human sample size = 3 annotator × 50–100 deck | **HOLD** | Con số hữu ích vì cho scale intuition, nhưng paper dùng để suy ra nó đang trả lời một câu hỏi thống kê **khác** với "bao nhiêu deck để validate correlation giữa judge của Deck Agent và human". Sample size thật phụ thuộc: validate metric nào, unit là deck hay slide, pairwise hay absolute, variance thực tế, benchmark size, budget/time. | Ghi trong `METRIC_REGISTRY`/`BENCHMARK_SPEC` là `Human sample size = TBD; candidate scale from literature: tens to ~100`. **Không** ghi `Requirement = 100 decks`. |
+| G-08 | Ngưỡng "judge đủ tin" = đạt ~80% human ceiling | **REJECT làm threshold** — giữ làm reference point | Đây là heuristic suy ra từ một setup cụ thể (PresentBench: judge–human ≈0.532, human–human ≈0.664 → tỷ lệ ~80%), **không phải threshold đã được literature establish**. Rủi ro thật: sau này viết vào báo cáo "industry accepted threshold is 80%" — sai. RQ06 cũng đã tự cảnh báo chuẩn agreement chuẩn mực có thể không áp dụng được cho domain này (PPTEval đo κ≈0.59 *giữa người với người*, dưới cả ngưỡng tentative). | Dùng để hiểu scale, **không** dùng làm pass/fail criterion của Deck Agent trước khi có RQ07 + pilot data. |
+| G-09 | Mọi model-based evaluator phải được đo **noise floor / repeatability** trước khi dùng để track regression | **ACCEPT** | Rất thực dụng và trực tiếp bảo vệ mission. Cùng deck, cùng prompt, judge chạy 5 lần có thể ra 81/85/80/84/82. Nếu đổi Planner và thấy 82 → 84, không thể tuyên bố "+2 improvement" vì +2 có thể nằm trong noise. Không đo noise floor thì mọi delta nhỏ hơn nó sẽ bị đọc nhầm thành tiến bộ — phá thẳng nền của mục tiêu "chứng minh cải thiện mỗi ngày". | ACCEPT ở mức nguyên tắc. Còn `N = ?`, `delta bao nhiêu mới significant?`, `aggregate thế nào?` → để pilot + RQ07 quyết định. |
+| G-10 | 4 baseline family (historical / naive / ablation / external) là 4 câu hỏi khác nhau, không thay thế nhau | **ACCEPT** | Bốn câu hỏi thật sự khác nhau: "hôm nay tốt hơn hôm qua?" (historical) · "pipeline nhiều bước có đáng?" (naive) · "ContentPlanner đóng góp gì?" (ablation) · "ngoài thị trường ta ở đâu?" (external). Giữ gần như nguyên vẹn phần này của RQ08. | RQ08 output đi thẳng vào `BASELINE_SPEC.md` sau khi sửa G-11/G-12. |
+| G-11 | Baseline B-1 (single-shot → Deck IR → same exporter) trả lời được "ContentPlanner + Deck IR architecture có đáng không?" | **REJECT wording — thu hẹp claim** | **Lỗi logic thật.** B-1 **vẫn dùng Deck IR** ở cả hai nhánh. Nó so `source → ContentPlanner → Deck IR` với `source → one LLM call → Deck IR`. Tức nó trả lời "**tách riêng planning stage có đáng không?**", **không** trả lời "Deck IR có đáng không?". Muốn claim về Deck IR cần experiment khác (IR-first pipeline vs direct generation pipeline), và experiment đó khó fair hơn đáng kể. | **Đổi tên B-1 thành "Single-shot planning baseline"** và thu hẹp claim tương ứng trong `BASELINE_SPEC.md`. Không được dùng B-1 để claim về giá trị của Deck IR. |
+| G-12 | A1 (`without ContentPlanner`) và B-1 hiện đang mô tả gần như cùng một experiment | **OPEN — phải resolve TRƯỚC implementation** | Nếu A1 cũng là `Extractor output → ONE prompt → Deck IR` thì nó **chính là** B-1, chỉ khác tên. Nguy cơ: implement hai experiment giống nhau rồi gọi hai tên khác nhau, rồi báo cáo như hai evidence độc lập. | Phải chọn: **merge chúng**, hoặc **định nghĩa A1 khác** (vd. A1 = full pipeline nhưng bypass explicit plan/outline artifact; B-1 = one-shot generation hoàn toàn). Giải quyết trước khi chạy experiment, không phải sau. |
+| G-13 | External comparison ở mức optional / contextual, không phải điều kiện chứng minh đồ án tốt | **ACCEPT** | RQ08 không bị cuốn vào "phải thắng Gamma". Đúng: Open Design input là brief và HTML-first, Deck Agent document-grounded và IR-first — hai bên chưa chắc chơi cùng bài. Thắng Open Design **không** chứng minh architecture Deck Agent tốt hơn. | External chỉ dùng để nói "trong điều kiện benchmark X, ngày Y, hệ thống chúng tôi ở vị trí Z so với một số hệ thống liên quan". **Không** dùng để chứng minh causal contribution của ContentPlanner. |
+| G-14 | Reproducibility / run manifest cần được freeze **ngay**, không chờ Wave 2 | **ACCEPT — freeze now** | Chưa biết final metric, nhưng đã chắc chắn evaluation cần reproducibility. RQ08 chỉ ra run comparison vô nghĩa nếu model/prompt/benchmark thay đổi ngầm (Atil 2024: dao động ~15% giữa các run được cho là "deterministic"). Đây là yêu cầu **implementation** gửi team, không phụ thuộc kết quả research. | Danh sách field bắt buộc ghi ở `06_design/EVALUATION_PIPELINE.md` §Run Manifest. Đặc biệt: **plan/outline artifact phải persist** — không phải vì plan là metric cuối, mà vì khi output hỏng cần reconstruct được "planner đã quyết định gì". |
+
+## Tổng kết disposition
+
+- **ACCEPT (7):** G-01, G-02, G-04 (có phân vai), G-06 (principle), G-09, G-10, G-13, G-14 → thành decision, ghi vào `05_decisions/DECISION_LOG.md`
+- **HOLD (3):** G-03, G-05, G-07 → sang `05_decisions/OPEN_QUESTIONS.md`, Wave 2 phải stress-test chứ không được giả định đúng
+- **REJECT (2):** G-08 (reject làm threshold), G-11 (reject wording/claim) → ghi vào `05_decisions/REJECTED_APPROACHES.md`
+- **OPEN, chặn implementation (1):** G-12 → phải resolve trước khi chạy experiment
+
+## Ảnh hưởng tới thứ tự Wave 2
+
+Wave 2 **không** chạy RQ02–RQ05 ngang nhau. Ưu tiên theo product claim hiện tại của Deck Agent (FR đặt ContentPlanner, bám nguồn, `slide_type`, và plan ở core flow):
+
+```
+WAVE 2A  (làm trước — core quality)
+├── RQ02 — Source quality: fidelity / correctness / coverage
+└── RQ03 — Structure / slide_type
+
+WAVE 2B  (sau — nhiều phần đã biết rơi xuống deterministic)
+├── RQ04 — Design
+└── RQ05 — Ready-to-use
+
+WAVE 3
+└── RQ07 — Benchmark design (phải sau Wave 2: metric quyết định benchmark cần chứa dữ liệu gì)
+```
+
+Lý do RQ07 vẫn ở cuối: nếu RQ02 chọn critical-fact coverage thì mỗi benchmark case phải lưu `critical_facts`; nếu RQ03 cần test `slide_type` thì mỗi source phải chạy cả 3 mode; nếu RQ05 cần edit effort thì benchmark phải có protocol cho user sửa deck. Thiết kế benchmark trước metric rất dễ phải làm lại.
+
+## Điều gate này KHÔNG làm
+
+- Không tóm tắt lại nội dung 3 RQ — đọc thẳng `03_research/RQ0{1,6,8}/recommendation.md`.
+- Không promote bất kỳ finding nào vào `06_design/` ngoài G-14 (run manifest, là engineering requirement độc lập với kết quả research) và các sửa wording do G-11 yêu cầu.
+- Không mở Wave 2B hay RQ07.
