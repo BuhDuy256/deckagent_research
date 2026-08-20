@@ -122,3 +122,11 @@ Bối cảnh: D-017 đã chốt hierarchy cho pilot — purpose + information se
 Nêu ra: 2026-08-14 (do user thêm khi review RQ00) · Resolved: 2026-08-14
 Bối cảnh: Mission đặc thù là chứng minh cải thiện "mỗi ngày", nhưng RQ hiện tại (RQ06 judge, RQ07 benchmark, RQ08 baseline) tập trung vào final quality measurement — chưa có câu hỏi rõ "bộ nào chạy mỗi commit/PR/nightly/milestone". Một metric tốt cho final report (vd. human evaluation) có thể là "terrible daily metric".
 Quyết định: Không tạo RQ09 literature-heavy — thêm workstream thiết kế "Development Evaluation Protocol" (Tier 0: mỗi commit — deterministic test; Tier 1: PR/thay đổi quan trọng — small frozen AI eval set; Tier 2: nightly/weekly — full automated benchmark; Tier 3: milestone/thesis — human-calibrated final eval), lên lịch sau Wave 1 + RQ07. Xem `05_decisions/DECISION_LOG.md` D-006.
+
+## Q-016 — [ACTIVE] Fact/topic presence detection độc lập với correctness
+
+Nêu ra: 2026-08-20 (session handoff sau Wave 2A consistency review)
+Bối cảnh: D-015 đã chốt coverage = topic/fact presence và present-but-wrong vẫn là present. Reverse MiniCheck với `gold_claim` chỉ đo candidate gold-claim support/`correctly_supported_fact`; contradicted và absent đều có thể trả `NOT_SUPPORTED_BY_DECK`, nên không thể mặc định dùng signal đó làm presence detector. SQ-P1 hiện bị block vì chưa chọn/freeze presence component.
+Câu hỏi: Với một `fact_identity/topic_key` đã freeze, phương pháp nào xác định deck có đề cập fact đó hay không, kể cả khi paraphrase/compress hoặc nói sai value, mà không biến presence thành entailment/correctness?
+Route: RQ02 focused follow-up; **không tạo RQ mới**. Không tự chọn method hoặc promote evaluator trong question record này.
+Đang chờ: focused method selection/research, fact records + manual two-label oracle, và freeze config riêng cho presence/grounding/number routing trước khi SQ-P1 được phép chạy. MiniCheck vẫn HOLD.
